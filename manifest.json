@@ -1,0 +1,55 @@
+{
+  "dxt_version": "0.1",
+  "name": "pdf-agent-mcp",
+  "version": "1.0.0",
+  "display_name": "PDF Agent MCP",
+  "description": "A Model Context Protocol server designed for agentic reading and selective PDF processing, enabling AI systems to efficiently navigate and extract content without context window limitations.",
+  "long_description": "This extension enables AI agents like Claude to read and search PDFs intelligently, just like humans do - selectively and strategically. Instead of processing entire documents that quickly exhaust context windows (leading to failures, slowness, or high costs), this tool allows agents to extract specific sections, analyze table of contents for navigation, perform targeted text extraction, and process images with OCR only when needed. Perfect for research, document analysis, and any workflow where efficient PDF processing is crucial for maintaining performance and managing token usage.",
+  "author": {
+    "name": "Vlad Gheorghe",
+    "url": "https://github.com/vlad-ds"
+  },
+  "license": "ISC",
+  "keywords": ["pdf", "document", "extraction", "analysis", "ocr", "toc", "table-of-contents"],
+  "icon": "icon.png",
+  "tools": [
+    {
+      "name": "get_pdf_metadata",
+      "description": "Extract metadata and basic information from a PDF file, including page count, file size, creation dates, and document properties"
+    },
+    {
+      "name": "get_pdf_text",
+      "description": "Extract text from specific pages or page ranges of a PDF file using hybrid extraction (native + OCR fallback)"
+    },
+    {
+      "name": "get_pdf_images",
+      "description": "Extract specific pages or page ranges from a PDF as images. Returns images as base64-encoded data in MCP image format"
+    },
+    {
+      "name": "search_pdf",
+      "description": "Search for text patterns (including regex) within a PDF file and return matching pages with context snippets"
+    },
+    {
+      "name": "get_pdf_outline",
+      "description": "Extract the table of contents (TOC) or outline/bookmarks structure from a PDF file with hierarchical navigation structure"
+    },
+    {
+      "name": "download_pdf",
+      "description": "Download a PDF from a URL and save it to the PDF agent home directory, returning the full path of the downloaded PDF"
+    }
+  ],
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"]
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {
+      "node": ">=16.0.0"
+    }
+  }
+}

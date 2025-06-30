@@ -14,9 +14,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { readFile, stat, mkdir } from "fs/promises";
-import { resolve, join, isAbsolute } from "path";
+import { readFile, stat, mkdir, writeFile } from "fs/promises";
+import { resolve, join, isAbsolute, extname, basename } from "path";
 import { homedir } from "os";
+import { createWriteStream } from "fs";
+import { pipeline } from "stream/promises";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { createWorker } from "tesseract.js";
@@ -143,6 +145,12 @@ const GetPdfOutlineSchema = z.object({
     message: "Exactly one of 'absolute_path' or 'relative_path' must be provided",
   }
 );
+
+const DownloadPdfSchema = z.object({
+  url: z.string().url(),
+  subfolder: z.string().default("downloads"),
+  filename: z.string().optional(),
+});
 
 // Configuration constants
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit for PDF files
@@ -979,6 +987,184 @@ function calculateOutlineStats(items: OutlineItem[]): {
 }
 
 /**
+ * Download PDF from URL to PDF agent home directory
+ */
+async function downloadPdfFromUrl(
+  url: string, 
+  subfolder: string = "downloads", 
+  filename?: string
+): Promise<{ success: boolean; filePath?: string; error?: string; metadata?: any }> {
+  try {
+    log('info', `Starting PDF download from URL: ${url}`);
+    
+    // Ensure PDF agent home directory exists
+    const pdfAgentHome = await ensurePdfAgentHome();
+    const downloadDir = join(pdfAgentHome, subfolder);
+    
+    // Create download directory if it doesn't exist
+    await mkdir(downloadDir, { recursive: true });
+    
+    // Generate filename if not provided
+    let finalFilename = filename;
+    if (!finalFilename) {
+      try {
+        const urlObj = new URL(url);
+        finalFilename = basename(urlObj.pathname) || `download_${Date.now()}.pdf`;
+        
+        // Ensure .pdf extension
+        if (!finalFilename.toLowerCase().endsWith('.pdf')) {
+          finalFilename += '.pdf';
+        }
+      } catch {
+        finalFilename = `download_${Date.now()}.pdf`;
+      }
+    } else {
+      // Ensure .pdf extension for provided filename
+      if (!finalFilename.toLowerCase().endsWith('.pdf')) {
+        finalFilename += '.pdf';
+      }
+    }
+    
+    const filePath = join(downloadDir, finalFilename);
+    
+    // Check if file already exists
+    if (await fileExists(filePath)) {
+      return {
+        success: false,
+        error: `File already exists at ${filePath}. Please provide a different filename or delete the existing file.`
+      };
+    }
+    
+    log('info', `Downloading PDF to: ${filePath}`);
+    
+    // Download the file with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), OPERATION_TIMEOUT);
+    
+    try {
+      const response = await fetch(url, { 
+        signal: controller.signal,
+        headers: {
+          'User-Agent': 'PDF-Agent-MCP/1.0.0'
+        }
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        return {
+          success: false,
+          error: `HTTP ${response.status}: ${response.statusText}`
+        };
+      }
+      
+      // Check content type
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/pdf') && !contentType.includes('application/octet-stream')) {
+        log('warn', `Content-Type is not PDF: ${contentType}`);
+      }
+      
+      // Get content length for size check
+      const contentLength = response.headers.get('content-length');
+      if (contentLength && parseInt(contentLength) > MAX_FILE_SIZE) {
+        return {
+          success: false,
+          error: `File too large: ${(parseInt(contentLength) / 1024 / 1024).toFixed(1)}MB (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`
+        };
+      }
+      
+      // Stream the response to file
+      const fileStream = createWriteStream(filePath);
+      
+      if (!response.body) {
+        return {
+          success: false,
+          error: 'Empty response body'
+        };
+      }
+      
+      await pipeline(response.body as any, fileStream);
+      
+      // Verify the downloaded file
+      const stats = await stat(filePath);
+      if (stats.size === 0) {
+        return {
+          success: false,
+          error: 'Downloaded file is empty'
+        };
+      }
+      
+      if (stats.size > MAX_FILE_SIZE) {
+        // Clean up oversized file
+        try {
+          await stat(filePath);
+          await import('fs').then(fs => fs.promises.unlink(filePath));
+        } catch {}
+        return {
+          success: false,
+          error: `Downloaded file too large: ${(stats.size / 1024 / 1024).toFixed(1)}MB (max ${MAX_FILE_SIZE / 1024 / 1024}MB)`
+        };
+      }
+      
+      // Try to validate it's a PDF by reading the header
+      try {
+        const buffer = await readFile(filePath, { encoding: null });
+        if (!buffer.subarray(0, 4).toString('ascii').startsWith('%PDF')) {
+          log('warn', 'Downloaded file does not appear to be a valid PDF (missing PDF header)');
+        }
+      } catch (error) {
+        log('warn', 'Could not validate PDF header', { error });
+      }
+      
+      log('info', `PDF downloaded successfully: ${stats.size} bytes`);
+      
+      return {
+        success: true,
+        filePath: filePath,
+        metadata: {
+          filename: finalFilename,
+          subfolder: subfolder,
+          size_bytes: stats.size,
+          size_mb: Number((stats.size / (1024 * 1024)).toFixed(2)),
+          url: url,
+          content_type: contentType,
+          downloaded_at: new Date().toISOString()
+        }
+      };
+      
+    } catch (error) {
+      clearTimeout(timeoutId);
+      
+      // Clean up partial file on error
+      try {
+        if (await fileExists(filePath)) {
+          await import('fs').then(fs => fs.promises.unlink(filePath));
+        }
+      } catch {}
+      
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: `Download timeout after ${OPERATION_TIMEOUT / 1000} seconds`
+        };
+      }
+      
+      return {
+        success: false,
+        error: `Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+    
+  } catch (error) {
+    log('error', 'PDF download failed', { error });
+    return {
+      success: false,
+      error: `Download failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    };
+  }
+}
+
+/**
  * Extract PDF outline/table of contents using PDF.js
  */
 async function extractPdfOutline(
@@ -1301,6 +1487,30 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
               default: false,
             },
           },
+        },
+      },
+      {
+        name: "download_pdf",
+        description: "Download a PDF from a URL and save it to the PDF agent home directory. Downloads to a specified subfolder (default: 'downloads') and returns the full path of the downloaded PDF.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              format: "uri",
+              description: "The URL of the PDF to download. Must be a valid HTTP/HTTPS URL.",
+            },
+            subfolder: {
+              type: "string",
+              description: "Subfolder within ~/pdf-agent/ to save the PDF (default: 'downloads'). Will be created if it doesn't exist.",
+              default: "downloads",
+            },
+            filename: {
+              type: "string",
+              description: "Optional filename for the downloaded PDF. If not provided, will be derived from URL. Extension .pdf will be added if missing.",
+            },
+          },
+          required: ["url"],
         },
       },
     ],
@@ -1994,6 +2204,53 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 type: "text",
                 text: JSON.stringify({ 
                   error: `Error extracting PDF outline at ${pathType} '${providedPath}': ${e}. Please ensure the file is a valid PDF and check the file path.` 
+                }),
+              },
+            ],
+          };
+        }
+      }
+
+      case "download_pdf": {
+        const { url, subfolder, filename } = DownloadPdfSchema.parse(args);
+        
+        try {
+          const result = await downloadPdfFromUrl(url, subfolder, filename);
+          
+          if (result.success && result.filePath) {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    success: true,
+                    file_path: result.filePath,
+                    metadata: result.metadata
+                  }, null, 2),
+                },
+              ],
+            };
+          } else {
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify({
+                    success: false,
+                    error: result.error
+                  }),
+                },
+              ],
+            };
+          }
+        } catch (e) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  success: false,
+                  error: `Download failed: ${e instanceof Error ? e.message : 'Unknown error'}`
                 }),
               },
             ],

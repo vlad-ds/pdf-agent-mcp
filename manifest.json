@@ -23,7 +23,7 @@
     },
     {
       "name": "get_pdf_images",
-      "description": "Extract specific pages or page ranges from a PDF as images. Returns images as base64-encoded data in MCP image format"
+      "description": "Extract specific pages or page ranges from a PDF as images for visual analysis. Essential for charts, diagrams, tables, figures, equations, and visual content that text cannot capture"
     },
     {
       "name": "search_pdf",

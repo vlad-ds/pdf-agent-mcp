@@ -1346,7 +1346,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_pdf_images",
-        description: "Extract specific pages or page ranges from a PDF as images. ⚠️ WARNING: Images consume significantly more tokens than text. Use only when visual content is necessary or explicitly requested by the user. Supports Python-style slicing: '5' (single page), '5:10' (range), '7:' (from page 7 to end), ':5' (from start to page 5). Returns images as base64-encoded data in MCP image format. Use either absolute_path for any location or relative_path for files in ~/pdf-agent/ directory.",
+        description: "Extract specific pages or page ranges from a PDF as images for visual analysis. Essential for understanding charts, diagrams, tables, figures, mathematical equations, handwritten content, or any visual elements that text extraction cannot capture. Use when you need to see the actual layout, formatting, or visual content. Supports Python-style slicing: '5' (single page), '5:10' (range), '7:' (from page 7 to end), ':5' (from start to page 5). Returns images as base64-encoded data in MCP image format. Use either absolute_path for any location or relative_path for files in ~/pdf-agent/ directory.",
         inputSchema: {
           type: "object",
           properties: {

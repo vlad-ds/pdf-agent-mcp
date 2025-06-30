@@ -1,0 +1,63 @@
+{
+  "name": "pdf-agent-mcp",
+  "version": "1.0.0",
+  "description": "A Model Context Protocol (MCP) server for dynamic PDF content extraction and analysis.",
+  "type": "module",
+  "main": "server/index.js",
+  "bin": {
+    "pdf-agent-mcp": "server/index.js"
+  },
+  "scripts": {
+    "build": "tsc && mkdir -p server && cp build/index.js server/",
+    "build:dxt": "npm run build && npm run bundle",
+    "bundle": "npm pack --pack-destination=dist/",
+    "start": "node server/index.js",
+    "dev": "tsc && node build/index.js",
+    "clean": "rm -rf build server dist",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vlad-ds/pdf-agent-mcp.git"
+  },
+  "keywords": [
+    "pdf",
+    "mcp",
+    "document",
+    "extraction",
+    "analysis",
+    "desktop-extension",
+    "dxt"
+  ],
+  "author": {
+    "name": "Vlad Gheorghe",
+    "url": "https://www.linkedin.com/in/vlad-ds/"
+  },
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vlad-ds/pdf-agent-mcp/issues"
+  },
+  "homepage": "https://github.com/vlad-ds/pdf-agent-mcp#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.2",
+    "@types/sharp": "^0.31.1",
+    "pdf-lib": "^1.17.1",
+    "pdf-to-png-converter": "^3.7.0",
+    "pdfjs-dist": "^5.3.31",
+    "sharp": "^0.34.2",
+    "tesseract.js": "^6.0.1",
+    "zod": "^3.25.67"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.7",
+    "@types/pdfjs-dist": "^2.10.377",
+    "typescript": "^5.8.3"
+  },
+  "files": [
+    "server/",
+    "README.md"
+  ]
+}

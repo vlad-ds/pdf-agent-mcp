@@ -21,7 +21,6 @@ import { createWriteStream } from "fs";
 import { pipeline } from "stream/promises";
 import { PDFDocument } from "pdf-lib";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
-import { createWorker } from "tesseract.js";
 import { pdfToPng } from "pdf-to-png-converter";
 import sharp from "sharp";
 
@@ -89,7 +88,7 @@ const GetPdfTextSchema = z.object({
   relative_path: z.string().optional(),
   use_pdf_home: z.boolean().default(true),
   page_range: z.string().default("1:"),
-  extraction_strategy: z.enum(["hybrid", "native", "ocr"]).default("hybrid"),
+  extraction_strategy: z.enum(["hybrid", "native"]).default("hybrid"),
   preserve_formatting: z.boolean().default(true),
   line_breaks: z.boolean().default(true),
 }).refine(
@@ -353,97 +352,38 @@ async function extractTextNative(pdfBuffer: Buffer, pageNumbers: number[]): Prom
   return texts;
 }
 
-/**
- * Extract text from PDF using OCR (Tesseract)
- */
-async function extractTextOCR(pdfPath: string, pageNumbers: number[]): Promise<string[]> {
-  const texts: string[] = [];
-  let worker = null;
-  
-  try {
-    // Initialize Tesseract worker (language loading and initialization handled automatically)
-    worker = await createWorker('eng');
-    
-    // Convert PDF pages to PNG images using pdf-to-png-converter
-    const pngPages = await pdfToPng(pdfPath, {
-      disableFontFace: false,
-      useSystemFonts: false,
-      viewportScale: 2.0, // High DPI for better OCR
-      pagesToProcess: pageNumbers.length <= 10 ? pageNumbers : undefined
-    });
-    
-    for (const pageNum of pageNumbers) {
-      try {
-        // Find the corresponding page in the results
-        const pageData = pngPages.find(p => p.pageNumber === pageNum);
-        
-        if (pageData && pageData.content) {
-          // Perform OCR on the image buffer
-          const { data: { text } } = await worker.recognize(pageData.content);
-          texts.push(text.trim());
-        } else {
-          log('warn', `Failed to find converted image for page ${pageNum}`);
-          texts.push('');
-        }
-      } catch (error) {
-        log('warn', `OCR failed for page ${pageNum}`, { error });
-        texts.push('');
-      }
-    }
-  } catch (error) {
-    log('error', 'OCR processing failed', { error });
-    throw new Error(`OCR processing failed: ${error}`);
-  } finally {
-    if (worker) {
-      await worker.terminate();
-    }
-  }
-  
-  return texts;
-}
 
 /**
- * Extract text using hybrid approach (native first, OCR fallback)
+ * Extract text using hybrid approach (enhanced native extraction with better error handling)
  */
 async function extractTextHybrid(pdfBuffer: Buffer, pdfPath: string, pageNumbers: number[]): Promise<string[]> {
   try {
-    // Try native extraction first
+    // Use native extraction with enhanced error handling
     const nativeTexts = await extractTextNative(pdfBuffer, pageNumbers);
     
-    // Check if native extraction produced sufficient text
-    const hybridTexts: string[] = [];
-    const ocrNeeded: number[] = [];
+    // Check if pages have very little text (likely scanned PDFs)
+    const results: string[] = [];
+    let scannedPageCount = 0;
     
     for (let i = 0; i < nativeTexts.length; i++) {
       const text = nativeTexts[i];
-      // If page has very little text (likely scanned), use OCR
-      if (text.trim().length < 50) {
-        ocrNeeded.push(pageNumbers[i]);
-        hybridTexts.push(''); // Placeholder
-      } else {
-        hybridTexts.push(text);
-      }
-    }
-    
-    // Use OCR for pages with insufficient native text
-    if (ocrNeeded.length > 0) {
-      log('info', `Using OCR for ${ocrNeeded.length} pages with insufficient native text`);
-      const ocrTexts = await extractTextOCR(pdfPath, ocrNeeded);
+      results.push(text);
       
-      // Merge OCR results back into hybrid results
-      let ocrIndex = 0;
-      for (let i = 0; i < hybridTexts.length; i++) {
-        if (hybridTexts[i] === '') {
-          hybridTexts[i] = ocrTexts[ocrIndex] || '';
-          ocrIndex++;
-        }
+      // Count pages with very little text
+      if (text.trim().length < 50) {
+        scannedPageCount++;
       }
     }
     
-    return hybridTexts;
+    // Log warning if many pages appear to be scanned
+    if (scannedPageCount > 0) {
+      log('warn', `${scannedPageCount} page(s) extracted very little text - may be scanned/image-based content`);
+    }
+    
+    return results;
   } catch (error) {
-    log('warn', 'Native extraction failed, falling back to OCR', { error });
-    return await extractTextOCR(pdfPath, pageNumbers);
+    log('error', 'Text extraction failed', { error });
+    throw error;
   }
 }
 
@@ -1303,7 +1243,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "get_pdf_text",
-        description: "Extract text from specific pages or page ranges of a PDF file using hybrid extraction (native + OCR fallback). Supports Python-style slicing: '5' (single page), '5:10' (range), '7:' (from page 7 to end), ':5' (from start to page 5). Use either absolute_path for any location or relative_path for files in ~/pdf-agent/ directory.",
+        description: "Extract text from specific pages or page ranges of a PDF file using native text extraction. Supports Python-style slicing: '5' (single page), '5:10' (range), '7:' (from page 7 to end), ':5' (from start to page 5). Use either absolute_path for any location or relative_path for files in ~/pdf-agent/ directory. Note: Works best with PDFs containing native text; scanned PDFs may yield limited results.",
         inputSchema: {
           type: "object",
           properties: {
@@ -1327,8 +1267,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             extraction_strategy: {
               type: "string",
-              description: "Text extraction strategy: 'hybrid' (native + OCR fallback), 'native' (PDF.js only), 'ocr' (Tesseract only). Default: 'hybrid'",
-              enum: ["hybrid", "native", "ocr"],
+              description: "Text extraction strategy: 'hybrid' (enhanced native extraction with better error handling), 'native' (standard PDF.js extraction). Default: 'hybrid'",
+              enum: ["hybrid", "native"],
               default: "hybrid",
             },
             preserve_formatting: {
@@ -1753,9 +1693,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           switch (extraction_strategy) {
             case "native":
               extractedTexts = await extractTextNative(pdfBuffer, pageNumbers);
-              break;
-            case "ocr":
-              extractedTexts = await extractTextOCR(resolvedPath, pageNumbers);
               break;
             case "hybrid":
             default:

@@ -48,7 +48,6 @@
     "pdf-to-png-converter": "^3.7.0",
     "pdfjs-dist": "^5.3.31",
     "sharp": "^0.34.2",
-    "tesseract.js": "^6.0.1",
     "zod": "^3.25.67"
   },
   "devDependencies": {

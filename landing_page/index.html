@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Agent - Conversational AI for your Documents</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-blue': '#3b82f6',
+                        'brand-dark': '#0a0a0a',
+                        'brand-gray': '#1a1a1a',
+                        'brand-light-gray': '#27272a',
+                    },
+                    animation: {
+                        'fade-in-up': 'fadeInUp 0.8s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeInUp: {
+                          '0%': { opacity: '0', transform: 'translateY(20px)' },
+                          '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Basic styling for a clean look */
+        body {
+            background-color: #0a0a0a;
+            color: #e5e7eb;
+        }
+        .section {
+            opacity: 0;
+            transition: opacity 1s, transform 1s;
+        }
+        .section.visible {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+        .glass-card {
+            background: rgba(26, 26, 26, 0.6);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(90deg, #a5b4fc, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="fixed top-0 left-0 w-full z-50 bg-brand-dark/80 backdrop-blur-lg border-b border-gray-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-brand-blue"><path d="M9 4H5C4.44772 4 4 4.44772 4 5V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V15M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V7.6875C15 8.33254 15.3526 8.92292 15.8995 9.29639L18.1005 11.0036C18.6474 11.3771 19 11.9675 19 12.6125V13M9 4V9L12 11L15 9V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <h1 class="text-xl font-bold text-gray-100">PDF Agent</h1>
+            </div>
+            <a href="#install" class="bg-brand-blue text-white font-semibold px-5 py-2 rounded-lg hover:bg-blue-500 transition-colors duration-300 hidden sm:block">
+                Get Started
+            </a>
+        </div>
+    </header>
+
+    <main class="pt-20">
+
+        <!-- Hero Section -->
+        <section id="hero" class="pt-16 pb-20 md:pt-24 md:pb-28">
+            <div class="container mx-auto px-6 text-center">
+                <h2 class="text-4xl md:text-6xl font-extrabold text-gray-50 leading-tight tracking-tighter">
+                    Your documents, <span class="gradient-text">unlocked.</span>
+                </h2>
+                <p class="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-gray-400">
+                    The intelligent layer for your PDFs. Ask complex questions, cross-reference, and extract information from any document, no matter the size. Free, easy, and open-source.
+                </p>
+                <div class="mt-10 flex justify-center items-center gap-4">
+                    <a href="#install" class="bg-brand-blue text-white font-semibold px-8 py-3 rounded-lg hover:bg-blue-500 transition-colors duration-300">
+                        Download Now
+                    </a>
+                    <a href="https://github.com/vlad-ds/pdf-agent-mcp" target="_blank" rel="noopener noreferrer" class="bg-gray-800 text-gray-200 font-semibold px-8 py-3 rounded-lg hover:bg-gray-700 transition-colors duration-300 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                        View on GitHub
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- The Problem Section -->
+        <section id="problem" class="py-20 bg-brand-gray">
+            <div class="container mx-auto px-6">
+                 <div class="text-center max-w-3xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-100">The Problem: AI Can't Read</h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        Modern AI is powerful, but it hits a wall with large or multiple documents. Trying to analyze a long textbook or compare several reports at once leads to context window errors, slow performance, and high costs.
+                    </p>
+                </div>
+                <div class="mt-12 grid md:grid-cols-2 gap-8 items-center">
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-8 text-center">
+                        <h3 class="text-2xl font-semibold text-red-300">Without PDF Agent</h3>
+                        <p class="mt-4 text-gray-400">Your AI tries to "read" the whole file at once, quickly becoming overwhelmed and failing the task.</p>
+                        <div class="mt-6 h-32 flex items-center justify-center bg-brand-light-gray rounded-lg text-red-400 font-mono text-sm">[Context Window Overload]</div>
+                    </div>
+                     <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-8 text-center">
+                        <h3 class="text-2xl font-semibold text-green-300">With PDF Agent</h3>
+                        <p class="mt-4 text-gray-400">The agent intelligently finds and reads only the relevant parts, giving the AI exactly what it needs.</p>
+                        <div class="mt-6 h-32 flex items-center justify-center bg-brand-light-gray rounded-lg text-green-400 font-mono text-sm">[Precise Snippets Delivered]</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What You Can Do Section -->
+        <section id="features" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-100">Unlock Your Documents</h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        PDF Agent gives your AI the tools to read, understand, and synthesize information like never before.
+                    </p>
+                </div>
+                <div class="mt-16 grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    <div class="bg-brand-light-gray p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold text-lg text-gray-200">Handle Massive PDFs</h3>
+                        <p class="mt-2 text-gray-400">Ask questions from a 1,500+ page textbook without overwhelming your AI.</p>
+                    </div>
+                    <div class="bg-brand-light-gray p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold text-lg text-gray-200">Work with Multiple Files</h3>
+                        <p class="mt-2 text-gray-400">Analyze and cross-reference 10+ PDFs simultaneously.</p>
+                    </div>
+                    <div class="bg-brand-light-gray p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold text-lg text-gray-200">Precise Navigation</h3>
+                        <p class="mt-2 text-gray-400">Reference specific chapters, page ranges, or sections with pinpoint accuracy.</p>
+                    </div>
+                    <div class="bg-brand-light-gray p-6 rounded-xl border border-gray-700">
+                        <h3 class="font-semibold text-lg text-gray-200">Fast & Cost-Efficient</h3>
+                        <p class="mt-2 text-gray-400">Only processes relevant snippets, saving time and API costs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Examples Section -->
+        <section id="examples" class="py-20 bg-brand-gray">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-100">See It In Action</h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        From academic research to financial analysis, discover what's possible when your AI can truly read.
+                    </p>
+                </div>
+                <div class="mt-12">
+                    <div class="glass-card rounded-xl p-6 md:p-8 font-mono text-gray-300 text-sm md:text-base space-y-4">
+                        <div class="border-b border-gray-700 pb-4">
+                            <p class="text-green-400"><span class="font-semibold text-gray-500 mr-2">USER:</span>In this 1500-page biology textbook, find all mentions of pheromones.</p>
+                            <p class="mt-2 text-blue-400"><span class="font-semibold text-gray-500 mr-2">AGENT:</span>Found 23 references across 8 chapters. Key mentions are in Ch. 12 (Animal Behavior, p. 487-492) and Ch. 15 (Chemical Communication, p. 623-631). The most detailed discussion is on p. 488-490.</p>
+                        </div>
+                        <div class="border-b border-gray-700 pb-4">
+                            <p class="text-green-400"><span class="font-semibold text-gray-500 mr-2">USER:</span>Using these three quarterly reports, compare the debt-to-equity ratio trend.</p>
+                            <p class="mt-2 text-blue-400"><span class="font-semibold text-gray-500 mr-2">AGENT:</span>The debt-to-equity ratio shows a positive trend: Q1 2023 was 0.81 (p. 32), Q2 was 0.77 (p. 34), and Q3 was 0.73 (p. 34).</p>
+                        </div>
+                        <div>
+                            <p class="text-green-400"><span class="font-semibold text-gray-500 mr-2">USER:</span>Reproduce the methodology chart from Figure 3 of the attached scientific paper.</p>
+                            <p class="mt-2 text-blue-400"><span class="font-semibold text-gray-500 mr-2">AGENT:</span>Figure 3 (p. 8) shows a 6-step flowchart: 1. Sample Collection → 2. RNA Extraction → 3. cDNA Synthesis → 4. qPCR Analysis → 5. Data Normalization → 6. Statistical Analysis.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Install Section -->
+        <section id="install" class="py-20">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-100">Install & Use in 5 Minutes</h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        Works with Claude Desktop, Cursor, Windsurf, and any MCP-compatible AI.
+                    </p>
+                </div>
+                <div class="mt-12 max-w-4xl mx-auto grid md:grid-cols-2 gap-10">
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-200 mb-4">Installation</h3>
+                        <ol class="list-decimal list-inside space-y-4 text-gray-400">
+                            <li>Download the official <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer" class="text-brand-blue hover:underline"><strong class="text-gray-200">Claude Desktop</strong></a> app.</li>
+                            <li>Download the <strong class="text-gray-200">PDF Agent .dxt file</strong>.</li>
+                            <li><strong class="text-gray-200">Double-click</strong> the downloaded file to open it.</li>
+                            <li>Press <strong class="text-gray-200">“Install”</strong> in the Claude dialogue that appears.</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-200 mb-4">How to Use</h3>
+                        <ol class="list-decimal list-inside space-y-4 text-gray-400">
+                            <li>Open any PDF in your browser (from a website or a local file).</li>
+                            <li>Copy the URL from the address bar.</li>
+                            <li>Paste the link into your chat with the AI.</li>
+                            <li>Ask any question about the document!</li>
+                        </ol>
+                    </div>
+                </div>
+                 <div class="mt-16 text-center">
+                    <a href="#" class="bg-brand-blue text-white font-semibold px-10 py-4 rounded-lg hover:bg-blue-500 transition-colors duration-300 text-lg">
+                        Download PDF Agent MCP
+                    </a>
+                </div>
+            </div>
+        </section>
+        
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-20 bg-brand-gray">
+            <div class="container mx-auto px-6">
+                <div class="text-center max-w-2xl mx-auto">
+                    <h2 class="text-3xl md:text-4xl font-bold text-gray-100">A Smarter Approach</h2>
+                    <p class="mt-4 text-lg text-gray-400">
+                        PDF Agent interacts with documents like a human would—intelligently and selectively.
+                    </p>
+                </div>
+                <div class="mt-16 grid lg:grid-cols-2 gap-8">
+                    <!-- How It Works -->
+                    <div class="glass-card rounded-xl p-8">
+                        <h3 class="text-2xl font-bold text-gray-100 mb-6">How It Works</h3>
+                        <ul class="space-y-4 text-gray-300">
+                            <li class="flex items-start"><span class="text-brand-blue mr-3 mt-1">&#10003;</span><span><strong class="text-gray-100">Analyzes Structure:</strong> It first checks the document's layout, pages, and table of contents.</span></li>
+                            <li class="flex items-start"><span class="text-brand-blue mr-3 mt-1">&#10003;</span><span><strong class="text-gray-100">Smart Search:</strong> It runs targeted searches to find relevant sections.</span></li>
+                            <li class="flex items-start"><span class="text-brand-blue mr-3 mt-1">&#10003;</span><span><strong class="text-gray-100">Selective Reading:</strong> It reads only the necessary pages, not the whole file.</span></li>
+                            <li class="flex items-start"><span class="text-brand-blue mr-3 mt-1">&#10003;</span><span><strong class="text-gray-100">Visual Analysis:</strong> It can analyze pages visually to understand charts and diagrams.</span></li>
+                            <li class="flex items-start"><span class="text-brand-blue mr-3 mt-1">&#10003;</span><span><strong class="text-gray-100">Private & Secure:</strong> Your files stay local. Only relevant snippets are sent to the AI.</span></li>
+                        </ul>
+                    </div>
+                    <!-- What It Does Not Do -->
+                    <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-8">
+                         <h3 class="text-2xl font-bold text-gray-100 mb-6">What It Is <span class="text-red-400">Not</span></h3>
+                         <ul class="space-y-4 text-gray-300">
+                            <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">&#10007;</span><span><strong class="text-gray-100">Whole-document ingestion:</strong> It doesn't try to read the entire PDF at once. This is slow, costly, and often impossible.</span></li>
+                            <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">&#10007;</span><span><strong class="text-gray-100">RAG or Embeddings:</strong> Skips the complexity of chunking, embedding, and vector storage. It's a simpler, more direct approach.</span></li>
+                            <li class="flex items-start"><span class="text-red-400 mr-3 mt-1">&#10007;</span><span><strong class="text-gray-100">Imprecise Summarization:</strong> It doesn't use small models for summarization, ensuring it can quote sources precisely.</span></li>
+                         </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Enterprise Section -->
+        <section id="enterprise" class="py-20">
+            <div class="container mx-auto px-6 text-center max-w-3xl">
+                 <h2 class="text-3xl md:text-4xl font-bold text-gray-100">Need More?</h2>
+                 <p class="mt-4 text-lg text-gray-400">
+                    We offer professional services to help you scale PDF Agent for your organization. Video tutorials are also coming soon.
+                </p>
+                <div class="mt-8 grid sm:grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                    <div class="bg-brand-light-gray p-6 rounded-lg border border-gray-700/50"><strong class="text-gray-200">Remote MCP Deployment</strong></div>
+                    <div class="bg-brand-light-gray p-6 rounded-lg border border-gray-700/50"><strong class="text-gray-200">Production Monitoring</strong></div>
+                    <div class="bg-brand-light-gray p-6 rounded-lg border border-gray-700/50"><strong class="text-gray-200">Team Training & Support</strong></div>
+                </div>
+                <div class="mt-10">
+                    <a href="mailto:vlad.datapro@gmail.com" class="text-brand-blue text-lg hover:underline">Contact for Enterprise Solutions &raquo;</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-brand-gray">
+        <div class="container mx-auto px-6 py-8 text-center text-gray-500">
+             <div class="flex justify-center items-center space-x-6">
+                <a href="https://www.linkedin.com/in/vlad-ds/" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">LinkedIn</a>
+                <a href="https://github.com/vlad-ds/pdf-agent-mcp" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-white transition-colors">GitHub</a>
+            </div>
+            <p class="mt-6 text-sm">&copy; 2025 PDF Agent. A free and open-source project.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Simple Intersection Observer for fade-in animations
+        document.addEventListener("DOMContentLoaded", function() {
+            const sections = document.querySelectorAll('.section, section');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                rootMargin: '0px',
+                threshold: 0.1
+            });
+
+            sections.forEach(section => {
+                observer.observe(section);
+            });
+        });
+    </script>
+
+</body>
+</html>
+

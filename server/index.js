@@ -145,7 +145,7 @@ const DownloadPdfSchema = z.object({
     filename: z.string().optional(),
 });
 // Configuration constants
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB limit for PDF files
+const MAX_FILE_SIZE = 400 * 1024 * 1024; // 400MB limit for PDF files
 const OPERATION_TIMEOUT = 30000; // 30 second timeout for operations
 /**
  * Parse page range string into array of page numbers (1-indexed)

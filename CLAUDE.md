@@ -78,7 +78,7 @@ dist/                 # NPM package artifacts
 
 ## Configuration Constants
 
-- **MAX_FILE_SIZE**: 100MB PDF size limit
+- **MAX_FILE_SIZE**: 400MB PDF size limit
 - **OPERATION_TIMEOUT**: 30 second timeout for operations
 - **Default PDF Home**: `~/pdf-agent/` directory for relative paths
 

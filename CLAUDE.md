@@ -53,14 +53,7 @@ npm start
 
 ## Testing
 
-Test files are available for manual verification:
-- `test-metadata.js` - PDF metadata extraction
-- `test-text-extraction.js` - Text extraction strategies
-- `test-image-extraction.js` - Image conversion and optimization
-- `test-enhanced-paths.js` - Path resolution testing
-- `test-simple.js` - Basic functionality
-
-Run tests manually with `node test-<name>.js` after building.
+Manual testing can be done by running the MCP server and using the tools directly through the Claude Desktop interface.
 
 ## DXT Packaging
 

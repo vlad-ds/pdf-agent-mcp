@@ -100,6 +100,44 @@ When implementing new features: read plan.md, pick the next high-level feature, 
 
 Use `/Users/vladgheorghe/mcp/dna-analysis-mcp` as reference for MCP server patterns, language choices, framework usage, and project structure conventions.
 
+## Release Process
+
+### Version Management
+- **CRITICAL**: Always ensure `manifest.json` version matches the GitHub release version
+- Check `manifest.json` version field before creating any release
+- Update version in `manifest.json` if needed before release
+
+### Release Steps
+1. **Build and Package**:
+   ```bash
+   npm run build:dxt
+   dxt pack
+   ```
+
+2. **Commit and Push Changes**:
+   ```bash
+   git add .
+   git commit -m "Release preparation for vX.X.X"
+   git push origin main
+   ```
+
+3. **Create GitHub Release**:
+   ```bash
+   gh release create vX.X.X --title "PDF Agent MCP vX.X.X" --notes "Release notes..." 
+   ```
+
+4. **Upload DXT File to Release Assets**:
+   ```bash
+   gh release upload vX.X.X pdf-agent-mcp.dxt
+   ```
+
+### Important Notes
+- **NEVER** forget to upload the DXT file to release assets - users need this file to install the extension
+- The DXT file must be available in the GitHub release assets, not just mentioned in the release notes
+- Always verify the release has the DXT file attached before considering it complete
+
 ## Development Workflow Memories
 
 - If you made changes and you expect me to test them, you need to rebuild the project, especially running dxt pack
+- Always check manifest.json version matches release version before creating releases
+- DXT file MUST be uploaded to GitHub release assets

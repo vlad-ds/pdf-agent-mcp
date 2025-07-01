@@ -19,15 +19,15 @@
     },
     {
       "name": "get_pdf_text",
-      "description": "Extract text from specific pages or page ranges of a PDF file using hybrid extraction (native + OCR fallback)"
+      "description": "Extract text from specific pages or page ranges of a PDF file using hybrid extraction. Supports enhanced page ranges including comma-separated combinations (e.g., '1,3:5,7')"
     },
     {
       "name": "get_pdf_images",
-      "description": "Extract specific pages or page ranges from a PDF as images for visual analysis. Essential for charts, diagrams, tables, figures, equations, and visual content that text cannot capture"
+      "description": "Extract specific pages or page ranges from a PDF as images for visual analysis. Supports enhanced page ranges including comma-separated combinations (e.g., '1,3:5,7'). Essential for charts, diagrams, tables, figures, equations, and visual content that text cannot capture"
     },
     {
       "name": "search_pdf",
-      "description": "Search for text patterns (including regex) within a PDF file and return matching pages with context snippets"
+      "description": "Search for text patterns (including regex) within a PDF file and return matching pages with context snippets. Supports enhanced page ranges including comma-separated combinations (e.g., '1,3:5,7')"
     },
     {
       "name": "get_pdf_outline",

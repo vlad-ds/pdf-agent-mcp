@@ -183,7 +183,12 @@ const OPERATION_TIMEOUT = 30000; // 30 second timeout for operations
 
 /**
  * Parse page range string into array of page numbers (1-indexed)
- * Supports formats: "5", "5:10", "7:", ":5"
+ * Supports formats:
+ * - Single pages: "5" → [5]
+ * - Ranges: "5:10" → [5,6,7,8,9,10] 
+ * - Open ranges: "7:" (from 7 to end), ":5" (from start to 5)
+ * - Comma-separated combinations: "1,3:5,7,10:" → [1,3,4,5,7,10,11,...]
+ * - Complex mixed: "1-3,7,8:10" → [1,2,3,7,8,9,10]
  */
 function parsePageRange(rangeStr: string, totalPages: number): number[] {
   const range = rangeStr.trim();
@@ -192,19 +197,55 @@ function parsePageRange(rangeStr: string, totalPages: number): number[] {
     throw new Error("Page range cannot be empty");
   }
   
+  // Split by commas to handle multiple segments
+  const segments = range.split(',').map(seg => seg.trim()).filter(seg => seg.length > 0);
+  
+  if (segments.length === 0) {
+    throw new Error("Page range cannot be empty after parsing");
+  }
+  
+  const allPages = new Set<number>();
+  
+  // Process each segment
+  for (const segment of segments) {
+    try {
+      const segmentPages = parseSinglePageRange(segment, totalPages);
+      for (const page of segmentPages) {
+        allPages.add(page);
+      }
+    } catch (error) {
+      throw new Error(`Invalid segment '${segment}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+  
+  // Convert to sorted array
+  return Array.from(allPages).sort((a, b) => a - b);
+}
+
+/**
+ * Parse a single page range segment (no commas)
+ * Supports: "5", "5:10", "7:", ":5"
+ */
+function parseSinglePageRange(segment: string, totalPages: number): number[] {
+  const trimmed = segment.trim();
+  
+  if (!trimmed) {
+    throw new Error("Page range segment cannot be empty");
+  }
+  
   // Single page: "5"
-  if (!range.includes(':')) {
-    const pageNum = parseInt(range, 10);
+  if (!trimmed.includes(':')) {
+    const pageNum = parseInt(trimmed, 10);
     if (isNaN(pageNum) || pageNum < 1 || pageNum > totalPages) {
-      throw new Error(`Invalid page number: ${range}. Must be between 1 and ${totalPages}`);
+      throw new Error(`Invalid page number: ${trimmed}. Must be between 1 and ${totalPages}`);
     }
     return [pageNum];
   }
   
   // Range with colon: "5:10", "7:", ":5"
-  const parts = range.split(':');
+  const parts = trimmed.split(':');
   if (parts.length !== 2) {
-    throw new Error(`Invalid page range format: ${range}. Use formats like "5", "5:10", "7:", or ":5"`);
+    throw new Error(`Invalid page range format: ${trimmed}. Use formats like "5", "5:10", "7:", or ":5"`);
   }
   
   let start = 1;
@@ -1306,7 +1347,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             page_range: {
               type: "string",
-              description: "Page range in Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Default: '1:' (all pages)",
+              description: "Page range in enhanced Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Also supports comma-separated combinations: '1,3:5,7' (pages 1, 3-5, and 7), '1-3,7,10:' (pages 1-3, 7, and 10 to end). Default: '1:' (all pages)",
               default: "1:",
             },
             extraction_strategy: {
@@ -1349,7 +1390,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             page_range: {
               type: "string",
-              description: "Page range in Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Default: '1:' (all pages)",
+              description: "Page range in enhanced Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Also supports comma-separated combinations: '1,3:5,7' (pages 1, 3-5, and 7), '1-3,7,10:' (pages 1-3, 7, and 10 to end). Default: '1:' (all pages)",
               default: "1:",
             },
             format: {
@@ -1401,7 +1442,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             page_range: {
               type: "string",
-              description: "Page range in Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Default: '1:' (all pages)",
+              description: "Page range in enhanced Python-style format: '5' (page 5), '5:10' (pages 5-10), '7:' (page 7 to end), ':5' (start to page 5). Also supports comma-separated combinations: '1,3:5,7' (pages 1, 3-5, and 7), '1-3,7,10:' (pages 1-3, 7, and 10 to end). Default: '1:' (all pages)",
               default: "1:",
             },
             search_pattern: {

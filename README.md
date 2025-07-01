@@ -54,6 +54,21 @@ If you experience issues loading the extension in Claude Desktop:
 
 This ensures the extension uses your system's Node.js installation instead of Claude's built-in version.
 
+### Viewing Logs
+
+To debug issues, you can view the MCP server logs:
+
+```bash
+# View logs (macOS)
+open "$HOME/Library/Logs/Claude/mcp-server-PDF Agent MCP.log"
+
+# Stream logs in real-time (macOS)
+tail -f "$HOME/Library/Logs/Claude/mcp-server-PDF Agent MCP.log"
+
+# View logs (Windows)
+notepad "%LOCALAPPDATA%\Claude\Logs\mcp-server-PDF Agent MCP.log"
+```
+
 ## Features
 
 - **Metadata Extraction**: Get PDF properties, page count, and file information

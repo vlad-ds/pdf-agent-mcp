@@ -24,15 +24,41 @@ import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf.mjs";
 import { pdfToPng } from "pdf-to-png-converter";
 import sharp from "sharp";
 
-// Enhanced logging for MCP environment
+// Configure PDF.js worker to use built-in worker
+// Console suppression in extractTextNative prevents worker warnings from reaching stdout
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'pdfjs-dist/build/pdf.worker.mjs';
+
+// Override console methods during PDF operations to prevent stdout contamination
+const originalConsole = {
+  log: console.log,
+  warn: console.warn,
+  error: console.error,
+  info: console.info
+};
+
+function suppressConsoleOutput() {
+  console.log = () => {};
+  console.warn = () => {};
+  console.error = () => {};
+  console.info = () => {};
+}
+
+function restoreConsoleOutput() {
+  console.log = originalConsole.log;
+  console.warn = originalConsole.warn;
+  console.error = originalConsole.error;
+  console.info = originalConsole.info;
+}
+
+// Enhanced logging for MCP environment - write to stderr to avoid corrupting JSON-RPC stdout
 function log(level: 'info' | 'error' | 'warn', message: string, data?: any) {
   const timestamp = new Date().toISOString();
   const logMessage = `[${timestamp}] [${level.toUpperCase()}] PDF-Agent-MCP: ${message}`;
   
   if (data) {
-    console.error(`${logMessage} ${JSON.stringify(data)}`);
+    process.stderr.write(`${logMessage} ${JSON.stringify(data)}\n`);
   } else {
-    console.error(logMessage);
+    process.stderr.write(`${logMessage}\n`);
   }
 }
 
@@ -309,13 +335,31 @@ async function searchWithTimeout(text: string, regex: RegExp, timeoutMs: number)
  * Extract text from PDF using native PDF.js method
  */
 async function extractTextNative(pdfBuffer: Buffer, pageNumbers: number[]): Promise<string[]> {
-  const pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(pdfBuffer) }).promise;
+  let pdfDoc: any;
+  
+  // Suppress console output during PDF.js operations to prevent stdout contamination
+  suppressConsoleOutput();
+  try {
+    pdfDoc = await pdfjsLib.getDocument({ data: new Uint8Array(pdfBuffer) }).promise;
+  } finally {
+    restoreConsoleOutput();
+  }
+  
   const texts: string[] = [];
   
   for (const pageNum of pageNumbers) {
     try {
-      const page = await pdfDoc.getPage(pageNum);
-      const textContent = await page.getTextContent();
+      // Suppress console output for each page operation as well
+      suppressConsoleOutput();
+      let page: any;
+      let textContent: any;
+      try {
+        page = await pdfDoc.getPage(pageNum);
+        textContent = await page.getTextContent();
+      } finally {
+        restoreConsoleOutput();
+      }
+      
       const textItems = textContent.items as any[];
       
       // Combine text items with spacing
@@ -2223,7 +2267,6 @@ async function main() {
     await server.connect(transport);
     
     log('info', 'PDF Agent MCP Server connected successfully');
-    console.error("PDF Agent MCP server running...");
   } catch (error) {
     log('error', 'Failed to start server', { error: error instanceof Error ? error.message : error });
     throw error;

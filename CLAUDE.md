@@ -99,3 +99,7 @@ When implementing new features: read plan.md, pick the next high-level feature, 
 ## Project Reference
 
 Use `/Users/vladgheorghe/mcp/dna-analysis-mcp` as reference for MCP server patterns, language choices, framework usage, and project structure conventions.
+
+## Development Workflow Memories
+
+- If you made changes and you expect me to test them, you need to rebuild the project, especially running dxt pack

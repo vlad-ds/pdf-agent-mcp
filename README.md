@@ -65,8 +65,14 @@ open "$HOME/Library/Logs/Claude/mcp-server-PDF Agent MCP.log"
 # Stream logs in real-time (macOS)
 tail -f "$HOME/Library/Logs/Claude/mcp-server-PDF Agent MCP.log"
 
+# Clear/delete logs (macOS)
+rm "$HOME/Library/Logs/Claude/mcp-server-PDF Agent MCP.log"
+
 # View logs (Windows)
 notepad "%LOCALAPPDATA%\Claude\Logs\mcp-server-PDF Agent MCP.log"
+
+# Clear/delete logs (Windows)
+del "%LOCALAPPDATA%\Claude\Logs\mcp-server-PDF Agent MCP.log"
 ```
 
 ## Features

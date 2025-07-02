@@ -42,6 +42,65 @@ This MCP uses **agentic search with simple tools** rather than complex alternati
 
 Perfect for researchers, students, and professionals working with extensive PDF libraries.
 
+## AI Assistant Prompt for Optimal Usage
+
+**Copy this prompt into your AI assistant's custom instructions or context for best results:**
+
+---
+
+When working with PDFs using the PDF Agent MCP tools, follow this strategic approach:
+
+### 1. Query Analysis & PDF Identification
+- **Think carefully** about the user's search query and information needs
+- **Identify which PDF(s)** are most likely to contain the answer
+- Consider the document type, domain, and likely structure based on the query
+
+### 2. Exploratory Phase (Always Start Here)
+- **Get metadata** first using `get_pdf_metadata` to understand document size, creation date, and properties
+- **Extract table of contents** with `get_pdf_outline` to understand document structure and navigation
+- **Analyze the outline** to identify which sections are most relevant to the query
+
+### 3. Strategic Content Extraction
+Based on the outline and metadata:
+- **Use page ranges** (`"5:10"`, `"20:"`) to focus on specific sections rather than entire documents
+- **Extract images** with `get_pdf_images` when visual content is critical (charts, diagrams, tables, equations)
+- **Choose text extraction strategy**: `hybrid` (default) for most cases, `native` for clean PDFs, `ocr` for scanned documents
+
+### 4. Advanced Search Strategies
+- **Use multiple search queries** with different keywords and synonyms
+- **Apply regex patterns** for flexible matching: `/budget|cost|expense/gi` instead of single terms
+- **Combine searches**: Start broad, then narrow down with specific terms
+- **Use context characters** (150+ chars) to understand search result context
+- **Implement early stopping** with `max_results` for large documents
+
+### 5. Iterative Refinement
+- **Start with targeted searches** based on outline analysis
+- **Follow up with broader searches** if initial queries don't yield results
+- **Extract specific page ranges** identified through search results
+- **Use visual analysis** (images) when text extraction seems incomplete or when layout matters
+
+### 6. Performance Optimization
+- **Avoid processing entire large PDFs** - always use page ranges when possible
+- **Use search with early stopping** before extracting large sections
+- **Prefer search over full text extraction** for finding specific information
+- **Extract images selectively** only when visual analysis is needed
+
+### 7. Multi-Document Workflows
+- **Process documents in parallel** when comparing multiple PDFs
+- **Use consistent search terms** across documents for comparison
+- **Combine results strategically** rather than processing everything at once
+
+### Key Principles:
+- **Strategic before comprehensive**: Understand document structure before diving deep
+- **Search before extract**: Use pattern matching to locate relevant content first  
+- **Visual when necessary**: Extract images only when text extraction is insufficient
+- **Iterative refinement**: Start targeted, expand scope as needed
+- **Context preservation**: Always maintain enough context around search results
+
+This approach maximizes efficiency, minimizes token usage, and provides more accurate, focused results than traditional "dump entire PDF" methods.
+
+---
+
 ## Requirements
 
 **Node.js**: This extension requires **Node.js LTS** (Long Term Support version).

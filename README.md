@@ -46,8 +46,7 @@ Perfect for researchers, students, and professionals working with extensive PDF 
 
 **Copy this prompt into your AI assistant's custom instructions or context for best results:**
 
----
-
+```
 When working with PDFs using the PDF Agent MCP tools, follow this strategic approach:
 
 ### 1. Query Analysis & PDF Identification
@@ -98,8 +97,7 @@ Based on the outline and metadata:
 - **Context preservation**: Always maintain enough context around search results
 
 This approach maximizes efficiency, minimizes token usage, and provides more accurate, focused results than traditional "dump entire PDF" methods.
-
----
+```
 
 ## Requirements
 

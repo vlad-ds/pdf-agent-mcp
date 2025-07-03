@@ -36,6 +36,10 @@
     {
       "name": "download_pdf",
       "description": "Download a PDF from a URL and save it to the PDF agent home directory, returning the full path of the downloaded PDF"
+    },
+    {
+      "name": "search_multiple_pdfs",
+      "description": "Search for text patterns across multiple PDF files in parallel. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 20 files with parallelism=10 in one call instead of two calls with 10 files each)"
     }
   ],
   "server": {

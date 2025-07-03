@@ -130,9 +130,9 @@ const GetPdfImagesSchema = z.object({
   use_pdf_home: z.boolean().default(true),
   page_range: z.string().default("1:"),
   format: z.enum(["png", "jpeg"]).default("jpeg"),
-  quality: z.number().min(1).max(100).default(85),
-  max_width: z.number().min(100).max(3000).optional(),
-  max_height: z.number().min(100).max(3000).optional(),
+  quality: z.coerce.number().min(1).max(100).default(85),
+  max_width: z.coerce.number().min(100).max(3000).optional(),
+  max_height: z.coerce.number().min(100).max(3000).optional(),
 }).refine(
   (data) => (data.absolute_path && !data.relative_path) || (!data.absolute_path && data.relative_path),
   {
@@ -146,10 +146,10 @@ const SearchPdfSchema = z.object({
   use_pdf_home: z.boolean().default(true),
   page_range: z.string().default("1:"),
   search_pattern: z.string().min(1),
-  max_results: z.number().min(1).optional(),
-  max_pages_scanned: z.number().min(1).optional(),
-  context_chars: z.number().min(10).max(1000).default(150),
-  search_timeout: z.number().min(1000).max(60000).default(10000),
+  max_results: z.coerce.number().min(1).optional(),
+  max_pages_scanned: z.coerce.number().min(1).optional(),
+  context_chars: z.coerce.number().min(10).max(1000).default(150),
+  search_timeout: z.coerce.number().min(1000).max(60000).default(10000),
 }).refine(
   (data) => (data.absolute_path && !data.relative_path) || (!data.absolute_path && data.relative_path),
   {
@@ -162,7 +162,7 @@ const GetPdfOutlineSchema = z.object({
   relative_path: z.string().optional(),
   use_pdf_home: z.boolean().default(true),
   include_destinations: z.boolean().default(true),
-  max_depth: z.number().min(1).max(10).optional(),
+  max_depth: z.coerce.number().min(1).max(10).optional(),
   flatten_structure: z.boolean().default(false),
 }).refine(
   (data) => (data.absolute_path && !data.relative_path) || (!data.absolute_path && data.relative_path),
@@ -175,6 +175,24 @@ const DownloadPdfSchema = z.object({
   url: z.string().url(),
   subfolder: z.string().default("downloads"),
   filename: z.string().optional(),
+});
+
+const SearchMultiplePdfsSchema = z.object({
+  files: z.array(z.object({
+    absolute_path: z.string().optional(),
+    relative_path: z.string().optional(),
+    use_pdf_home: z.boolean().default(true),
+  }).refine(
+    (data) => (data.absolute_path && !data.relative_path) || (!data.absolute_path && data.relative_path),
+    { message: "Exactly one of 'absolute_path' or 'relative_path' must be provided for each file" }
+  )).min(1),
+  search_pattern: z.string().min(1),
+  parallelism: z.coerce.number().min(1).max(10).default(4),
+  page_range: z.string().default("1:"),
+  max_results_per_file: z.coerce.number().min(1).optional(),
+  max_pages_scanned_per_file: z.coerce.number().min(1).optional(),
+  context_chars: z.coerce.number().min(10).max(1000).default(150),
+  search_timeout: z.coerce.number().min(1000).max(60000).default(10000),
 });
 
 // Configuration constants
@@ -1259,6 +1277,138 @@ async function extractPdfOutline(
   }
 }
 
+/**
+ * Search multiple PDFs with parallelism control
+ */
+async function searchMultiplePdfsWithParallelism(
+  files: Array<{ path: string; originalPath: string }>,
+  searchPattern: string,
+  options: {
+    parallelism: number;
+    pageRange: string;
+    maxResultsPerFile?: number;
+    maxPagesScannedPerFile?: number;
+    contextChars: number;
+    searchTimeout: number;
+  }
+): Promise<Array<{
+  file: string;
+  success: boolean;
+  result?: any;
+  error?: string;
+}>> {
+  const results: Array<{ file: string; success: boolean; result?: any; error?: string }> = [];
+  
+  // Process files in batches based on parallelism
+  for (let i = 0; i < files.length; i += options.parallelism) {
+    const batch = files.slice(i, i + options.parallelism);
+    
+    const batchPromises = batch.map(async ({ path, originalPath }) => {
+      try {
+        // Check if file exists
+        if (!(await fileExists(path))) {
+          return {
+            file: originalPath,
+            success: false,
+            error: `File not found: ${path}`
+          };
+        }
+        
+        // Get PDF metadata
+        const pdfBuffer = await safeReadFile(path);
+        let pdfDoc: PDFDocument;
+        try {
+          pdfDoc = await PDFDocument.load(pdfBuffer);
+        } catch (error) {
+          if (error instanceof Error && error.message.includes('encrypted')) {
+            pdfDoc = await PDFDocument.load(pdfBuffer, { ignoreEncryption: true });
+          } else {
+            throw error;
+          }
+        }
+        const totalPages = pdfDoc.getPageCount();
+        
+        // Parse page range
+        const pageNumbers = parsePageRange(options.pageRange, totalPages);
+        
+        // Determine search strategy
+        const hasLimits = options.maxResultsPerFile !== undefined || options.maxPagesScannedPerFile !== undefined;
+        
+        let searchResult;
+        if (hasLimits) {
+          searchResult = await searchPdfPageByPage(
+            path,
+            pageNumbers,
+            searchPattern,
+            options.contextChars,
+            options.searchTimeout,
+            options.maxResultsPerFile,
+            options.maxPagesScannedPerFile
+          );
+        } else {
+          const comprehensiveResult = await searchPdfComprehensive(
+            path,
+            pageNumbers,
+            searchPattern,
+            options.contextChars,
+            options.searchTimeout
+          );
+          searchResult = {
+            ...comprehensiveResult,
+            completed: true,
+            stoppedReason: 'completed'
+          };
+        }
+        
+        // Calculate total matches for this file
+        const totalMatches = searchResult.matches.reduce((sum: number, page: any) => 
+          sum + page.matchCount, 0);
+        
+        return {
+          file: originalPath,
+          success: true,
+          result: {
+            total_pages: totalPages,
+            pages_in_range: pageNumbers.length,
+            total_matches: totalMatches,
+            pages_with_matches: searchResult.matches.length,
+            pages_scanned: searchResult.pagesScanned,
+            completed: searchResult.completed,
+            stopped_reason: searchResult.stoppedReason,
+            matches: searchResult.matches,
+            errors: searchResult.errors
+          }
+        };
+      } catch (error) {
+        log('error', `Error searching PDF ${originalPath}`, { error });
+        return {
+          file: originalPath,
+          success: false,
+          error: error instanceof Error ? error.message : String(error)
+        };
+      }
+    });
+    
+    // Wait for batch to complete
+    const batchResults = await Promise.allSettled(batchPromises);
+    
+    // Process batch results
+    batchResults.forEach((result, index) => {
+      if (result.status === 'fulfilled') {
+        results.push(result.value);
+      } else {
+        results.push({
+          file: batch[index].originalPath,
+          success: false,
+          error: `Unexpected error: ${result.reason}`
+        });
+      }
+    });
+  }
+  
+  return results;
+}
+
 // Create the MCP server
 const server = new Server({
   name: "pdf-agent-mcp",
@@ -1537,6 +1687,79 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ["url"],
         },
+      },
+      {
+        name: "search_multiple_pdfs",
+        description: "Search for text patterns across multiple PDF files in parallel. Processes files concurrently based on the parallelism factor for optimal performance. Increase parallelism (max: 10) to search more files simultaneously and reduce total search time. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 20 files with parallelism=10 in one call instead of two calls with 10 files each). Returns matches and errors for each file separately.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            files: {
+              type: "array",
+              description: "Array of PDF files to search. Each file must specify either absolute_path or relative_path.",
+              items: {
+                type: "object",
+                properties: {
+                  absolute_path: {
+                    type: "string",
+                    description: "Absolute path to the PDF file"
+                  },
+                  relative_path: {
+                    type: "string",
+                    description: "Path relative to ~/pdf-agent/ directory"
+                  },
+                  use_pdf_home: {
+                    type: "boolean",
+                    description: "Use PDF agent home directory for relative paths (default: true)",
+                    default: true
+                  }
+                }
+              },
+              minItems: 1
+            },
+            search_pattern: {
+              type: "string",
+              description: "Search pattern: '/regex/flags' format or plain text. Applied to all files."
+            },
+            parallelism: {
+              type: "number",
+              description: "Number of files to process concurrently. Higher values = faster search. Default: 4, Max: 10",
+              minimum: 1,
+              maximum: 10,
+              default: 4
+            },
+            page_range: {
+              type: "string",
+              description: "Page range to search in each file. Default: '1:' (all pages)",
+              default: "1:"
+            },
+            max_results_per_file: {
+              type: "number",
+              description: "Max matches per file before stopping. Optional.",
+              minimum: 1
+            },
+            max_pages_scanned_per_file: {
+              type: "number",
+              description: "Max pages to scan per file. Optional.",
+              minimum: 1
+            },
+            context_chars: {
+              type: "number",
+              description: "Characters of context around matches. Default: 150",
+              minimum: 10,
+              maximum: 1000,
+              default: 150
+            },
+            search_timeout: {
+              type: "number",
+              description: "Timeout per file in milliseconds. Default: 10000",
+              minimum: 1000,
+              maximum: 60000,
+              default: 10000
+            }
+          },
+          required: ["files", "search_pattern"]
+        }
       },
     ],
   };
@@ -2276,6 +2499,123 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 }),
               },
             ],
+          };
+        }
+      }
+
+      case "search_multiple_pdfs": {
+        // Handle case where files might be passed as JSON string
+        let processedArgs = { ...args };
+        if (args && typeof args.files === 'string') {
+          try {
+            processedArgs.files = JSON.parse(args.files);
+          } catch (e) {
+            throw new Error(`Invalid JSON in files parameter: ${e}`);
+          }
+        }
+        
+        const { 
+          files, 
+          search_pattern,
+          parallelism,
+          page_range,
+          max_results_per_file,
+          max_pages_scanned_per_file,
+          context_chars,
+          search_timeout
+        } = SearchMultiplePdfsSchema.parse(processedArgs);
+        
+        try {
+          // Resolve all file paths
+          const resolvedFiles = await Promise.all(files.map(async (file) => {
+            let resolvedPath: string;
+            let originalPath: string;
+            
+            if (file.use_pdf_home && file.relative_path) {
+              const pdfAgentHome = await ensurePdfAgentHome();
+              resolvedPath = join(pdfAgentHome, file.relative_path);
+              originalPath = file.relative_path;
+            } else if (file.absolute_path) {
+              if (!isAbsolute(file.absolute_path)) {
+                throw new Error(`Path '${file.absolute_path}' is not absolute`);
+              }
+              resolvedPath = file.absolute_path;
+              originalPath = file.absolute_path;
+            } else {
+              throw new Error('Invalid file specification');
+            }
+            
+            return { path: resolvedPath, originalPath };
+          }));
+          
+          log('info', `Starting parallel search across ${files.length} PDFs with parallelism ${parallelism}`);
+          
+          // Perform parallel search
+          const searchResults = await searchMultiplePdfsWithParallelism(
+            resolvedFiles,
+            search_pattern,
+            {
+              parallelism,
+              pageRange: page_range,
+              maxResultsPerFile: max_results_per_file,
+              maxPagesScannedPerFile: max_pages_scanned_per_file,
+              contextChars: context_chars,
+              searchTimeout: search_timeout
+            }
+          );
+          
+          // Calculate summary statistics
+          const successfulSearches = searchResults.filter(r => r.success);
+          const failedSearches = searchResults.filter(r => !r.success);
+          const totalMatches = successfulSearches.reduce((sum, r) => {
+            if (r.result?.total_matches) {
+              return sum + r.result.total_matches;
+            }
+            return sum;
+          }, 0);
+          
+          const totalPagesScanned = successfulSearches.reduce((sum, r) => {
+            if (r.result?.pages_scanned) {
+              return sum + r.result.pages_scanned;
+            }
+            return sum;
+          }, 0);
+          
+          const summary = {
+            files_searched: files.length,
+            successful_searches: successfulSearches.length,
+            failed_searches: failedSearches.length,
+            total_matches_found: totalMatches,
+            total_pages_scanned: totalPagesScanned,
+            search_pattern: search_pattern,
+            parallelism_used: parallelism,
+            page_range: page_range
+          };
+          
+          log('info', `Search completed: ${totalMatches} matches found across ${successfulSearches.length} files`);
+          
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({
+                  summary,
+                  results: searchResults
+                }, null, 2)
+              }
+            ]
+          };
+        } catch (e) {
+          log('error', 'Error in search_multiple_pdfs', { error: e });
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ 
+                  error: `Error searching multiple PDFs: ${e}`
+                })
+              }
+            ]
           };
         }
       }

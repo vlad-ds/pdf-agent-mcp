@@ -151,7 +151,7 @@ const SearchMultiplePdfsSchema = z.object({
         use_pdf_home: z.boolean().default(true),
     }).refine((data) => (data.absolute_path && !data.relative_path) || (!data.absolute_path && data.relative_path), { message: "Exactly one of 'absolute_path' or 'relative_path' must be provided for each file" })).min(1),
     search_pattern: z.string().min(1),
-    parallelism: z.coerce.number().min(1).max(10).default(4),
+    parallelism: z.coerce.number().min(1).max(50).default(4),
     page_range: z.string().default("1:"),
     max_results_per_file: z.coerce.number().min(1).optional(),
     max_pages_scanned_per_file: z.coerce.number().min(1).optional(),
@@ -1350,7 +1350,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
             },
             {
                 name: "search_multiple_pdfs",
-                description: "Search for text patterns across multiple PDF files in parallel. Processes files concurrently based on the parallelism factor for optimal performance. Increase parallelism (max: 10) to search more files simultaneously and reduce total search time. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 20 files with parallelism=10 in one call instead of two calls with 10 files each). Returns matches and errors for each file separately.",
+                description: "Search for text patterns across multiple PDF files in parallel. Processes files concurrently based on the parallelism factor for optimal performance. Increase parallelism (max: 50) to search more files simultaneously and reduce total search time. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 100 files with parallelism=50 in one call instead of multiple calls with 20 files each). Returns matches and errors for each file separately.",
                 inputSchema: {
                     type: "object",
                     properties: {
@@ -1383,9 +1383,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
                         },
                         parallelism: {
                             type: "number",
-                            description: "Number of files to process concurrently. Higher values = faster search. Default: 4, Max: 10",
+                            description: "Number of files to process concurrently. Higher values = faster search. Default: 4, Max: 50",
                             minimum: 1,
-                            maximum: 10,
+                            maximum: 50,
                             default: 4
                         },
                         page_range: {

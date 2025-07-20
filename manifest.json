@@ -1,7 +1,7 @@
 {
   "dxt_version": "0.1",
   "name": "pdf-agent-mcp",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "display_name": "PDF Agent MCP",
   "description": "A Model Context Protocol server designed for agentic reading and selective PDF processing, enabling AI systems to efficiently navigate and extract content without context window limitations.",
   "long_description": "This extension enables AI agents like Claude to read and search PDFs intelligently, just like humans do. Instead of processing entire documents, this tool allows agents to extract specific sections, analyze table of contents for navigation, perform targeted text extraction, and process images with OCR only when needed. Perfect for research, document analysis, and searching through multiple large documents.",
@@ -39,7 +39,7 @@
     },
     {
       "name": "search_multiple_pdfs",
-      "description": "Search for text patterns across multiple PDF files in parallel. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 20 files with parallelism=10 in one call instead of two calls with 10 files each)"
+      "description": "Search for text patterns across multiple PDF files in parallel. For large batches of files, prefer a single call with high parallelism rather than multiple smaller calls (e.g., search 100 files with parallelism=50 in one call instead of multiple calls with 20 files each)"
     }
   ],
   "server": {

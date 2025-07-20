@@ -1,5 +1,7 @@
 # PDF Agent MCP
 
+🌐 **[Visit the Landing Page](https://vlad-ds.github.io/pdf-agent-mcp/landing_page/)** for an overview and easy download
+
 ## ⚠️ Important Setup Instructions
 
 **Before using this extension, you MUST configure Claude Desktop properly:**

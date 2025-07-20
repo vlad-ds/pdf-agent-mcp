@@ -1,5 +1,30 @@
 # PDF Agent MCP
 
+## ⚠️ Important Setup Instructions
+
+**Before using this extension, you MUST configure Claude Desktop properly:**
+
+### Required Configuration
+
+1. **Install Node.js LTS**: Visit [nodejs.org](https://nodejs.org/) and download the LTS version
+2. **Configure Claude Desktop**:
+   - Go to **Claude > Settings > Extensions > Advanced Settings**
+   - **Disable** "Use Built-in Node.js for MCP"
+   - Restart Claude Desktop
+
+**This extension will NOT work with Claude's built-in Node.js**. You must use your system's Node.js installation.
+
+### Troubleshooting
+
+If you experience issues loading the extension:
+
+1. Verify Node.js is installed: Run `node --version` in your terminal
+2. Ensure "Use Built-in Node.js for MCP" is disabled in Claude Desktop settings
+3. Restart Claude Desktop completely
+4. Check the logs at `~/Library/Logs/Claude/mcp-server-PDF Agent MCP.log` (macOS) or `%LOCALAPPDATA%\Claude\Logs\mcp-server-PDF Agent MCP.log` (Windows)
+
+---
+
 A Model Context Protocol server designed for agentic reading and selective PDF processing. Enables AI systems to efficiently navigate and extract content from PDFs without overwhelming context windows.
 
 ## Features
@@ -99,27 +124,20 @@ Based on the outline and metadata:
 This approach maximizes efficiency, minimizes token usage, and provides more accurate, focused results than traditional "dump entire PDF" methods.
 ```
 
-## Requirements
-
-**Node.js**: This extension requires **Node.js LTS** (Long Term Support version).
-
-- **Install Node.js LTS**: Visit [nodejs.org](https://nodejs.org/) and download the LTS version
-- **Alternative**: Use a Node.js version manager like [nvm](https://github.com/nvm-sh/nvm) or [fnm](https://github.com/Schniz/fnm)
-
 ## Installation
 
 ### Option 1: DXT Package (Recommended)
 
-1. Download the latest `pdf-agent-mcp.dxt` file from the releases
-2. Double-click the `.dxt` file to install it in Claude Desktop
-
-This will create a configuration file at:
+1. **First**, ensure you have completed the [Required Configuration](#required-configuration) above
+2. Download the latest `pdf-agent-mcp.dxt` file from the releases
+3. Double-click the `.dxt` file to install it in Claude Desktop
 
 ### Option 2: Manual Installation
 
-1. Clone this repository
-2. Build the project: `npm install && npm run build`
-3. Find your Claude Desktop config file:
+1. **First**, ensure you have completed the [Required Configuration](#required-configuration) above
+2. Clone this repository
+3. Build the project: `npm install && npm run build`
+4. Find your Claude Desktop config file:
 
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
@@ -140,16 +158,6 @@ Add the following:
 ```
 
 Replace `PATH_TO_REPO` with the actual path to your cloned repository.
-
-## Troubleshooting
-
-If you experience issues loading the extension in Claude Desktop:
-
-1. Go to **Claude > Settings > Extensions > Advanced Settings**
-2. **Disable** "Use Built-in Node.js for MCP"
-3. Restart Claude Desktop
-
-This ensures the extension uses your system's Node.js installation instead of Claude's built-in version.
 
 ## Development
 

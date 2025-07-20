@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Instructions | PDF Agent MCP</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-bg': '#F9F6F3',
+                        'brand-bg-alt': '#FFFFFF',
+                        'brand-text': '#5A5A5A',
+                        'brand-heading': '#3A3A3A',
+                        'brand-primary': '#D98686',
+                        'brand-secondary': '#7DA9D4',
+                        'brand-subtle': '#EAE5E1',
+                        'brand-warning': '#E89611',
+                        'brand-warning-bg': '#FEF3C7',
+                    },
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #F9F6F3;
+            color: #5A5A5A;
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .button-primary {
+            background-color: #D98686;
+            color: white;
+            font-weight: 600;
+            padding: 12px 32px;
+            border-radius: 8px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .button-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(217, 134, 134, 0.25);
+        }
+        .warning-box {
+            background-color: #FEF3C7;
+            border: 2px solid #E89611;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 24px 0;
+        }
+        .step-box {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE5E1;
+            border-radius: 12px;
+            padding: 24px;
+            margin: 16px 0;
+            box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header class="bg-brand-bg border-b border-brand-subtle">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="text-brand-primary">
+                    <path d="M9 4H5C4.44772 4 4 4.44772 4 5V19C4 19.5523 4.44772 20 5 20H19C19.5523 20 20 19.5523 20 19V15M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V7.6875C15 8.33254 15.3526 8.92292 15.8995 9.29639L18.1005 11.0036C18.6474 11.3771 19 11.9675 19 12.6125V13M9 4V9L12 11L15 9V4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1 class="text-xl font-bold text-brand-heading">PDF Agent MCP</h1>
+            </div>
+            <a href="index.html" class="text-brand-primary hover:underline">← Back to Main Page</a>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-6 py-12 max-w-4xl">
+        
+        <!-- Critical Warning -->
+        <div class="warning-box">
+            <div class="flex items-start space-x-3">
+                <svg class="w-6 h-6 text-brand-warning flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                <div>
+                    <h2 class="text-xl font-bold text-brand-warning mb-3">⚠️ CRITICAL: Setup Required BEFORE Installation</h2>
+                    <p class="text-brand-heading font-semibold mb-2">This extension will NOT work with Claude's built-in Node.js.</p>
+                    <p class="text-brand-text">You must install Node.js on your system and configure Claude Desktop to use it. Follow the steps below exactly, or the extension will fail to load.</p>
+                </div>
+            </div>
+        </div>
+
+        <h1 class="text-3xl font-bold text-brand-heading mb-8">Setup Instructions for PDF Agent MCP</h1>
+
+        <!-- Step 1: Install Node.js -->
+        <div class="step-box">
+            <h3 class="text-xl font-semibold text-brand-heading mb-4 flex items-center">
+                <span class="bg-brand-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">1</span>
+                Install Node.js LTS
+            </h3>
+            <div class="ml-11">
+                <p class="text-brand-text mb-4">PDF Agent MCP requires Node.js to run. Download and install the LTS (Long Term Support) version:</p>
+                <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer" class="button-primary inline-block">
+                    Download Node.js LTS →
+                </a>
+                <p class="text-sm text-brand-text mt-4"><strong>Alternative:</strong> You can also use a Node.js version manager like <a href="https://github.com/nvm-sh/nvm" target="_blank" class="text-brand-primary hover:underline">nvm</a> or <a href="https://github.com/Schniz/fnm" target="_blank" class="text-brand-primary hover:underline">fnm</a>.</p>
+                
+                <h4 class="font-semibold text-brand-heading mt-6 mb-2">Verify Installation:</h4>
+                <p class="text-brand-text mb-2">After installation, open your terminal and run:</p>
+                <div class="code-block">node --version</div>
+                <p class="text-brand-text">You should see a version number like <code>v20.x.x</code> or higher.</p>
+            </div>
+        </div>
+
+        <!-- Step 2: Configure Claude Desktop -->
+        <div class="step-box">
+            <h3 class="text-xl font-semibold text-brand-heading mb-4 flex items-center">
+                <span class="bg-brand-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">2</span>
+                Configure Claude Desktop
+            </h3>
+            <div class="ml-11">
+                <p class="text-brand-text mb-4">You must disable Claude's built-in Node.js and make it use your system installation:</p>
+                <ol class="list-decimal list-inside space-y-3 text-brand-text">
+                    <li>Open Claude Desktop</li>
+                    <li>Go to <strong>Claude > Settings > Extensions > Advanced Settings</strong></li>
+                    <li><strong>Disable</strong> the option "Use Built-in Node.js for MCP"</li>
+                    <li><strong>Restart Claude Desktop</strong> completely (close and reopen)</li>
+                </ol>
+                
+                <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p class="text-blue-800"><strong>Why this is necessary:</strong> Claude's built-in Node.js has compatibility issues with modern PDF processing libraries. Using your system's Node.js installation ensures proper functionality.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Download and Install -->
+        <div class="step-box">
+            <h3 class="text-xl font-semibold text-brand-heading mb-4 flex items-center">
+                <span class="bg-brand-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">3</span>
+                Download and Install PDF Agent
+            </h3>
+            <div class="ml-11">
+                <p class="text-brand-text mb-6">Now that Node.js is configured, you can install the PDF Agent extension:</p>
+                <a href="https://github.com/vlad-ds/pdf-agent-mcp/releases/latest/download/pdf-agent-mcp.dxt" class="button-primary inline-block mb-6">
+                    Download PDF Agent MCP (.dxt file) →
+                </a>
+                <ol class="list-decimal list-inside space-y-3 text-brand-text">
+                    <li>Download the <code>pdf-agent-mcp.dxt</code> file using the button above</li>
+                    <li>Double-click the downloaded <code>.dxt</code> file</li>
+                    <li>Claude Desktop will open and ask if you want to install the extension</li>
+                    <li>Click <strong>"Install"</strong></li>
+                    <li>The extension will be installed and ready to use</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- Step 4: Verify Installation -->
+        <div class="step-box">
+            <h3 class="text-xl font-semibold text-brand-heading mb-4 flex items-center">
+                <span class="bg-brand-primary text-white rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold mr-3">4</span>
+                Verify Installation
+            </h3>
+            <div class="ml-11">
+                <p class="text-brand-text mb-4">Test that everything is working:</p>
+                <ol class="list-decimal list-inside space-y-3 text-brand-text">
+                    <li>Open a new chat in Claude Desktop</li>
+                    <li>Look for "PDF Agent MCP" in the extensions list (should show as connected)</li>
+                    <li>Try a simple test: Ask Claude to "Get metadata for any PDF" and provide a PDF URL</li>
+                </ol>
+                
+                <div class="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p class="text-green-800"><strong>Success!</strong> If Claude can analyze the PDF metadata, everything is working correctly.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Troubleshooting -->
+        <div class="mt-12 p-6 bg-gray-50 border border-gray-200 rounded-lg">
+            <h3 class="text-xl font-semibold text-brand-heading mb-4">Troubleshooting</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <h4 class="font-semibold text-brand-heading">Extension won't load or shows as disconnected:</h4>
+                    <ul class="list-disc list-inside ml-4 text-brand-text space-y-1">
+                        <li>Verify Node.js is installed: run <code>node --version</code> in terminal</li>
+                        <li>Double-check that "Use Built-in Node.js for MCP" is disabled in Claude settings</li>
+                        <li>Restart Claude Desktop completely</li>
+                        <li>Try reinstalling the extension by double-clicking the .dxt file again</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-brand-heading">Extension loads but PDF processing fails:</h4>
+                    <ul class="list-disc list-inside ml-4 text-brand-text space-y-1">
+                        <li>Check the logs for detailed error messages (see README for log locations)</li>
+                        <li>Ensure you have a stable internet connection for downloading PDFs</li>
+                        <li>Try with a different PDF to rule out file-specific issues</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-brand-heading">Still having issues?</h4>
+                    <p class="text-brand-text ml-4">
+                        Check the detailed troubleshooting guide in the 
+                        <a href="https://github.com/vlad-ds/pdf-agent-mcp#troubleshooting" target="_blank" class="text-brand-primary hover:underline">project README</a>
+                        or open an issue on 
+                        <a href="https://github.com/vlad-ds/pdf-agent-mcp/issues" target="_blank" class="text-brand-primary hover:underline">GitHub</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps -->
+        <div class="mt-12 text-center">
+            <h3 class="text-2xl font-semibold text-brand-heading mb-4">You're All Set! 🎉</h3>
+            <p class="text-brand-text mb-6">PDF Agent MCP is now ready to help you work with PDFs more efficiently in Claude Desktop.</p>
+            <a href="index.html" class="button-primary">
+                ← Back to Main Page
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-brand-bg-alt border-t border-brand-subtle py-8 mt-16">
+        <div class="container mx-auto px-6 text-center">
+            <p class="text-brand-text">
+                <a href="https://github.com/vlad-ds/pdf-agent-mcp" target="_blank" class="text-brand-primary hover:underline">PDF Agent MCP</a> 
+                • Built with ❤️ for better PDF workflows
+            </p>
+        </div>
+    </footer>
+
+</body>
+</html>

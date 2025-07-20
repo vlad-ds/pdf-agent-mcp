@@ -29,6 +29,8 @@
                         'brand-primary': '#D98686', // Muted terracotta
                         'brand-secondary': '#7DA9D4',// Muted, dusty blue
                         'brand-subtle': '#EAE5E1',  // A very subtle border color
+                        'brand-warning': '#E89611',// Warning orange
+                        'brand-warning-bg': '#FEF3C7',// Warning background
                     },
                 }
             }
@@ -86,6 +88,19 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px 0 rgba(0, 0, 0, 0.06);
         }
+        .warning-box {
+            background-color: #FEF3C7;
+            border: 2px solid #E89611;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 16px 0;
+        }
+        .setup-required {
+            background-color: #FEF3C7;
+            border-left: 4px solid #E89611;
+            padding: 16px;
+            margin: 12px 0;
+        }
     </style>
 </head>
 <body class="antialiased">
@@ -115,7 +130,7 @@
                     Stop copying and pasting chunks of text. Stop getting "file too large" errors. Just drop your PDF link and ask your question—whether it's a 10-page contract or a 1,000-page manual.
                 </p>
                 <div class="mt-10 flex justify-center items-center gap-4">
-                    <a href="#install" class="button-primary">
+                    <a href="#" onclick="downloadWithInstructions()" class="button-primary">
                         Download Now
                     </a>
                     <a href="https://github.com/vlad-ds/pdf-agent-mcp" target="_blank" rel="noopener noreferrer" class="button-secondary flex items-center gap-2">
@@ -208,18 +223,45 @@
                 <div class="text-center max-w-3xl mx-auto">
                     <h2 class="text-3xl md:text-4xl font-bold text-brand-heading">Start Using It in 2 Minutes</h2>
                     <p class="mt-4 text-lg text-brand-text leading-relaxed">
-                        No coding. No setup. Just install and start asking questions.
+                        No coding required. Quick setup with Node.js configuration.
                     </p>
+                </div>
+                
+                <!-- Node.js Warning -->
+                <div class="warning-box max-w-3xl mx-auto mt-12">
+                    <div class="flex items-start space-x-3">
+                        <svg class="w-6 h-6 text-brand-warning flex-shrink-0 mt-1" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        <div>
+                            <h3 class="font-bold text-brand-warning text-lg mb-2">⚠️ Important: Node.js Setup Required</h3>
+                            <p class="text-brand-heading mb-2"><strong>Before installing this extension, you must:</strong></p>
+                            <ol class="list-decimal list-inside text-brand-text space-y-1 mb-3">
+                                <li>Install <a href="https://nodejs.org/" target="_blank" class="text-brand-primary hover:underline font-semibold">Node.js LTS</a> on your computer</li>
+                                <li>Disable "Use Built-in Node.js for MCP" in Claude Desktop settings</li>
+                            </ol>
+                            <p class="text-brand-text text-sm">
+                                <strong>This extension will NOT work with Claude's built-in Node.js.</strong> 
+                                <a href="setup-instructions.html" target="_blank" class="text-brand-primary hover:underline font-semibold">View detailed setup guide →</a>
+                            </p>
+                        </div>
+                    </div>
                 </div>
                 <div class="mt-16 max-w-4xl mx-auto grid md:grid-cols-2 gap-10 text-brand-text">
                     <div>
-                        <h3 class="text-xl font-semibold text-brand-heading mb-4">One-Time Setup (2 minutes)</h3>
+                        <h3 class="text-xl font-semibold text-brand-heading mb-4">One-Time Setup (5 minutes)</h3>
                         <ol class="list-decimal list-inside space-y-4">
+                            <li>Install <a href="https://nodejs.org/" target="_blank" rel="noopener noreferrer" class="text-brand-primary hover:underline font-semibold">Node.js LTS</a></li>
                             <li>Get <a href="https://claude.ai/download" target="_blank" rel="noopener noreferrer" class="text-brand-primary hover:underline font-semibold">Claude Desktop</a> (if you don't have it)</li>
-                            <li>Download PDF Agent below</li>
-                            <li>Double-click the .dxt file</li>
-                            <li>Click "Install" when Claude asks</li>
+                            <li>Configure Claude settings (disable built-in Node.js)</li>
+                            <li>Download and install PDF Agent</li>
                         </ol>
+                        <div class="setup-required mt-4">
+                            <p class="text-sm text-brand-text">
+                                <strong>Need help?</strong> 
+                                <a href="setup-instructions.html" target="_blank" class="text-brand-primary hover:underline">Follow our detailed setup guide</a>
+                            </p>
+                        </div>
                     </div>
                     <div>
                         <h3 class="text-xl font-semibold text-brand-heading mb-4">Then, Every Time</h3>
@@ -232,9 +274,12 @@
                     </div>
                 </div>
                 <div class="mt-16 text-center">
-                    <a href="https://github.com/vlad-ds/pdf-agent-mcp/releases/latest/download/pdf-agent-mcp.dxt" class="button-primary text-lg">
+                    <a href="#" onclick="downloadWithInstructions()" class="button-primary text-lg">
                         Download PDF Agent MCP
                     </a>
+                    <p class="text-sm text-brand-text mt-4">
+                        Downloading will also open setup instructions in a new tab
+                    </p>
                 </div>
             </div>
         </section>
@@ -324,6 +369,23 @@
                 observer.observe(section);
             });
         });
+
+        // Download function that opens setup instructions and starts download
+        function downloadWithInstructions() {
+            // Open setup instructions in new tab
+            window.open('setup-instructions.html', '_blank');
+            
+            // Start download
+            const downloadUrl = 'https://github.com/vlad-ds/pdf-agent-mcp/releases/latest/download/pdf-agent-mcp.dxt';
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = 'pdf-agent-mcp.dxt';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            return false; // Prevent default link behavior
+        }
     </script>
 
 </body>
